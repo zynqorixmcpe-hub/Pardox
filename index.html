@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PARADOX — Where Logic Ends</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #050509; --bg-alt: #0d0d16; --bg-card: #12121e;
+    --accent: #7c3aed; --accent2: #06b6d4; --accent3: #ec4899;
+    --text: #e5e7eb; --muted: #8b8b9e;
+    --border: rgba(124, 58, 237, 0.25);
+  }
+  [data-theme="light"] {
+    --bg: #f4f4f9; --bg-alt: #ffffff; --bg-card: #ffffff;
+    --text: #1a1a2e; --muted: #6b7280; --border: rgba(124, 58, 237, 0.2);
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--bg); color: var(--text);
+    line-height: 1.5; overflow-x: hidden;
+    font-size: 15px; /* Normal text size */
+  }
+
+  /* ===== SCROLL PROGRESS ===== */
+  .scroll-progress {
+    position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+    z-index: 9998;
+  }
+
+  /* ===== NAVBAR ===== */
+  nav {
+    position: fixed; top: 0; width: 100%; padding: 1rem 5%;
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(5, 5, 9, 0.85); backdrop-filter: blur(15px);
+    border-bottom: 1px solid var(--border); z-index: 1000;
+  }
+  [data-theme="light"] nav { background: rgba(244, 244, 249, 0.9); }
+  .logo {
+    font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800;
+    letter-spacing: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+  .nav-links a {
+    color: var(--muted); text-decoration: none;
+    font-size: 0.9rem; font-weight: 500; transition: color 0.3s;
+  }
+  .nav-links a:hover { color: var(--accent2); }
+  .nav-right { display: flex; align-items: center; gap: 0.8rem; }
+
+  .theme-toggle {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--bg-card); border: 1px solid var(--border);
+    color: var(--text); font-size: 1.1rem; cursor: pointer;
+    transition: transform 0.3s;
+  }
+  .theme-toggle:hover { transform: scale(1.1); }
+  .menu-btn {
+    display: none; background: none; border: none;
+    color: var(--text); font-size: 1.5rem; cursor: pointer;
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    text-align: center; padding: 6rem 5% 2rem;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(124,58,237,0.2), transparent 45%),
+      radial-gradient(circle at 80% 70%, rgba(6,182,212,0.15), transparent 45%);
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.4rem 1rem; background: rgba(124,58,237,0.15);
+    border: 1px solid var(--border); border-radius: 50px;
+    font-size: 0.8rem; color: var(--muted); margin-bottom: 1.5rem;
+  }
+  .hero-badge .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #10b981; box-shadow: 0 0 10px #10b981;
+  }
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(3rem, 10vw, 6.5rem);
+    font-weight: 800; letter-spacing: 6px; line-height: 1;
+    background: linear-gradient(135deg, #fff 20%, var(--accent) 50%, var(--accent2) 90%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; margin-bottom: 1rem;
+  }
+  .tagline {
+    font-size: clamp(0.9rem, 2vw, 1.1rem);
+    color: var(--muted); letter-spacing: 3px;
+    text-transform: uppercase; margin-bottom: 1.5rem;
+    min-height: 1.6em;
+  }
+  .tagline .cursor-blink {
+    display: inline-block; width: 2px; height: 1.1em;
+    background: var(--accent2); margin-left: 4px;
+    vertical-align: middle; animation: blink 1s infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+  .hero p.desc {
+    max-width: 500px; color: var(--muted);
+    font-size: 0.95rem; margin-bottom: 2rem;
+  }
+  .cta { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+  .btn {
+    padding: 0.8rem 1.8rem; border-radius: 50px;
+    font-size: 0.9rem; font-weight: 600;
+    font-family: inherit; text-decoration: none;
+    transition: transform 0.25s, box-shadow 0.25s;
+    border: none; display: inline-block; cursor: pointer;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; box-shadow: 0 0 25px rgba(124,58,237,0.4);
+  }
+  .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 35px rgba(124,58,237,0.6); }
+  .btn-ghost {
+    background: transparent; color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { border-color: var(--accent); transform: translateY(-3px); }
+
+  /* ===== SECTIONS ===== */
+  section { padding: 4rem 5%; }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-weight: 800; text-align: center;
+    margin-bottom: 0.8rem; letter-spacing: 1px;
+  }
+  .section-title .grad {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .section-sub {
+    text-align: center; color: var(--muted);
+    max-width: 500px; margin: 0 auto 2.5rem; font-size: 0.95rem;
+  }
+
+  /* ===== ABOUT ===== */
+  .about-paradox {
+    max-width: 1000px; margin: 0 auto;
+    display: grid; grid-template-columns: 1.2fr 1fr;
+    gap: 2.5rem; align-items: center;
+  }
+  .about-text h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 800; margin-bottom: 1rem; line-height: 1.2;
+  }
+  .about-text h2 .grad {
+    background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .about-text p {
+    color: var(--muted); margin-bottom: 0.8rem;
+    font-size: 0.95rem; line-height: 1.6;
+  }
+  .about-text .highlight { color: var(--accent2); font-weight: 600; }
+  .about-text .quote {
+    border-left: 3px solid var(--accent);
+    padding-left: 1rem; margin: 1.2rem 0;
+    font-style: italic; color: var(--text); font-size: 0.95rem;
+  }
+  .about-stats-mini {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 0.8rem; margin-top: 1.2rem;
+  }
+  .mini-stat {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 0.8rem;
+    transition: transform 0.3s, border-color 0.3s;
+  }
+  .mini-stat:hover { transform: translateY(-4px); border-color: var(--accent); }
+  .mini-stat h4 {
+    font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .mini-stat p {
+    color: var(--muted); font-size: 0.75rem;
+    margin: 0; letter-spacing: 1px;
+  }
+  .orb {
+    width: 220px; height: 220px; margin: 0 auto;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, var(--accent), transparent 60%),
+                radial-gradient(circle at 70% 70%, var(--accent2), transparent 60%),
+                radial-gradient(circle at 50% 50%, var(--accent3), transparent 70%);
+    animation: orbFloat 6s ease-in-out infinite; position: relative;
+  }
+  .orb::after {
+    content: ''; position: absolute; inset: -15px;
+    border: 2px dashed var(--border); border-radius: 50%;
+    animation: spin 20s linear infinite;
+  }
+  @keyframes orbFloat {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-20px) scale(1.05); }
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ===== FEATURES ===== */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.2rem; max-width: 1000px; margin: 0 auto;
+  }
+  .card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.5rem;
+    transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+    position: relative; overflow: hidden;
+  }
+  .card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; width: 100%; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.4s;
+  }
+  .card:hover {
+    transform: translateY(-6px); border-color: var(--accent);
+    box-shadow: 0 15px 40px rgba(124,58,237,0.2);
+  }
+  .card:hover::before { transform: scaleX(1); }
+  .card .icon { font-size: 1.8rem; margin-bottom: 0.8rem; }
+  .card h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+  .card p { color: var(--muted); font-size: 0.9rem; }
+
+  /* ===== STATS ===== */
+  .stats-section {
+    background: var(--bg-alt);
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1.5rem; max-width: 800px; margin: 0 auto; text-align: center;
+  }
+  .stat .num {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 4vw, 3rem); font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .stat p {
+    color: var(--muted); letter-spacing: 1.5px;
+    text-transform: uppercase; font-size: 0.75rem;
+  }
+
+  /* ===== TEAM ===== */
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.2rem; max-width: 900px; margin: 0 auto;
+  }
+  .team-card {
+    text-align: center;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.5rem;
+    transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+  }
+  .team-card:hover {
+    transform: translateY(-6px); border-color: var(--accent);
+    box-shadow: 0 15px 40px rgba(124,58,237,0.2);
+  }
+  .avatar {
+    width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 1rem;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; color: #fff;
+  }
+  .team-card h4 { font-size: 1rem; margin-bottom: 0.3rem; }
+  .team-card .role {
+    color: var(--accent2); font-size: 0.8rem;
+    margin-bottom: 0.8rem; font-weight: 500;
+  }
+  .team-card .bio { color: var(--muted); font-size: 0.85rem; }
+
+  /* ===== GALLERY WITH REAL PHOTOS ===== */
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem; max-width: 1000px; margin: 0 auto;
+  }
+  .gallery-item {
+    position: relative; aspect-ratio: 4/3;
+    border-radius: 14px; overflow: hidden;
+    cursor: pointer; transition: transform 0.4s;
+  }
+  .gallery-item:hover { transform: scale(1.03); }
+  .gallery-item img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.5s;
+  }
+  .gallery-item:hover img { transform: scale(1.1); }
+  .gallery-item .overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 30%, rgba(0,0,0,0.9));
+    display: flex; align-items: flex-end; padding: 1rem;
+    opacity: 0.8; transition: opacity 0.3s;
+  }
+  .gallery-item:hover .overlay { opacity: 1; }
+  .overlay h4 { color: #fff; font-size: 1rem; margin-bottom: 0.2rem; }
+  .overlay p { color: rgba(255,255,255,0.8); font-size: 0.8rem; }
+
+  /* ===== FAQ ===== */
+  .faq { max-width: 700px; margin: 0 auto; }
+  .faq-item {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 12px; margin-bottom: 0.8rem; overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .faq-item.open { border-color: var(--accent); }
+  .faq-q {
+    width: 100%; padding: 1rem 1.2rem;
+    background: none; border: none; color: var(--text);
+    font-size: 0.95rem; font-weight: 600; font-family: inherit;
+    text-align: left; display: flex; justify-content: space-between;
+    align-items: center; gap: 1rem; cursor: pointer;
+  }
+  .faq-q .plus {
+    font-size: 1.2rem; color: var(--accent);
+    transition: transform 0.3s; flex-shrink: 0;
+  }
+  .faq-item.open .plus { transform: rotate(45deg); }
+  .faq-a {
+    max-height: 0; overflow: hidden;
+    transition: max-height 0.4s, padding 0.4s;
+    padding: 0 1.2rem; color: var(--muted); font-size: 0.9rem;
+  }
+  .faq-item.open .faq-a {
+    max-height: 300px; padding: 0 1.2rem 1rem;
+  }
+
+  /* ===== CONTACT + MESSAGE FORM ===== */
+  .contact-box {
+    max-width: 600px; margin: 0 auto;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 20px; padding: 2rem;
+  }
+  .contact-box form { display: flex; flex-direction: column; gap: 1rem; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .field { display: flex; flex-direction: column; gap: 0.4rem; }
+  .field label {
+    font-size: 0.85rem; color: var(--muted); font-weight: 500;
+  }
+  .field input, .field textarea {
+    width: 100%; padding: 0.8rem 1rem;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text); font-size: 0.9rem;
+    font-family: inherit; resize: vertical;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .field input:focus, .field textarea:focus {
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.15);
+  }
+  .field input.error, .field textarea.error {
+    border-color: #ef4444;
+  }
+  .field .error-text {
+    color: #ef4444; font-size: 0.75rem; display: none;
+  }
+  .field .error-text.show { display: block; }
+
+  .submit-btn {
+    width: 100%;
+    padding: 0.9rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; border: none; border-radius: 50px;
+    font-family: inherit; font-size: 0.95rem; font-weight: 600;
+    cursor: pointer; transition: transform 0.3s, box-shadow 0.3s;
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  }
+  .submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(124,58,237,0.5);
+  }
+  .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff; border-radius: 50%;
+    animation: spin 0.8s linear infinite; display: none;
+  }
+  .submit-btn.loading .spinner { display: inline-block; }
+
+  /* ===== FOOTER ===== */
+  footer {
+    padding: 2.5rem 5% 2rem;
+    border-top: 1px solid var(--border); background: var(--bg-alt);
+  }
+  .footer-grid {
+    max-width: 1000px; margin: 0 auto;
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 1.5rem; margin-bottom: 1.5rem;
+  }
+  .footer-brand p {
+    color: var(--muted); margin-top: 0.8rem;
+    font-size: 0.85rem; max-width: 250px;
+  }
+  .footer-col h4 {
+    font-size: 0.75rem; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 0.8rem;
+  }
+  .footer-col a {
+    display: block; color: var(--text); text-decoration: none;
+    font-size: 0.85rem; margin-bottom: 0.5rem;
+    transition: color 0.3s, transform 0.3s;
+    cursor: pointer;
+  }
+  .footer-col a:hover { color: var(--accent2); transform: translateX(4px); }
+  .footer-bottom {
+    max-width: 1000px; margin: 0 auto; padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    text-align: center; color: var(--muted); font-size: 0.8rem;
+  }
+
+  /* ===== BACK TOP ===== */
+  .back-top {
+    position: fixed; bottom: 25px; right: 25px;
+    width: 45px; height: 45px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; border: none; font-size: 1.2rem; cursor: pointer;
+    box-shadow: 0 10px 30px rgba(124,58,237,0.4);
+    opacity: 0; visibility: hidden; transform: translateY(20px);
+    transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+    z-index: 500;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+
+  /* ===== MOBILE ===== */
+  @media (max-width: 900px) {
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+    .about-paradox { grid-template-columns: 1fr; gap: 2rem; }
+    .orb { width: 180px; height: 180px; }
+  }
+  @media (max-width: 768px) {
+    .nav-links {
+      position: fixed; top: 65px;
+      right: 5%; left: 5%; flex-direction: column;
+      background: var(--bg-alt); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.5rem; gap: 1rem;
+      transform: translateY(-200%); opacity: 0;
+      transition: transform 0.4s, opacity 0.4s;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      max-height: 70vh; overflow-y: auto;
+    }
+    .nav-links.open { transform: translateY(0); opacity: 1; }
+    .menu-btn { display: block; }
+    .form-row { grid-template-columns: 1fr; }
+    .contact-box { padding: 1.5rem; }
+    .footer-grid { grid-template-columns: 1fr; text-align: center; }
+    .footer-brand p { margin: 0.8rem auto 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">PARADOX</div>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#home">Home</a></li>
+    <li><a href="#about-paradox">About</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#gallery">Work</a></li>
+    <li><a href="#team">Team</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
+    <button class="menu-btn" id="menuBtn">☰</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero" id="home">
+  <div class="hero-badge">
+    <span class="dot"></span>
+    <span>Now live — v4.0 Message Edition</span>
+  </div>
+  <h1>PARADOX</h1>
+  <div class="tagline">
+    <span id="typedText">Where Logic Ends</span><span class="cursor-blink"></span>
+  </div>
+  <p class="desc">
+    Ek aisi jagah jahan contradictions beauty ban jaate hain. Explore the impossible, 
+    embrace the unknown, aur discover karo woh cheezein jo aapko sochne pe majboor kar dein.
+  </p>
+  <div class="cta">
+    <a href="#about-paradox" class="btn btn-primary">Discover Paradox →</a>
+    <a href="#contact" class="btn btn-ghost">Send Message ✉</a>
+  </div>
+</header>
+
+<!-- ABOUT -->
+<section id="about-paradox">
+  <div class="about-paradox">
+    <div class="about-text">
+      <h2>PARADOX <span class="grad">Kya Hai?</span></h2>
+      <p>
+        <span class="highlight">Paradox</span> ek aisi jagah hai jahan do opposite cheezein saath milti hain —
+        logic aur imagination, simplicity aur depth, technology aur creativity.
+      </p>
+      <p>
+        Yeh sirf ek website nahi hai. Yeh ek <span class="highlight">philosophy</span> hai — ek belief system
+        jo kehta hai ki sabse beautiful cheezein wahi hoti hain jo pehli nazar mein impossible lagti hain.
+      </p>
+      <div class="quote">
+        "The most beautiful thing we can experience is the mysterious. It is the source of all true art and science."
+        <br>— Albert Einstein
+      </div>
+      <div class="about-stats-mini">
+        <div class="mini-stat"><h4>2019</h4><p>Founded</p></div>
+        <div class="mini-stat"><h4>50+</h4><p>Team Members</p></div>
+        <div class="mini-stat"><h4>15+</h4><p>Countries</p></div>
+        <div class="mini-stat"><h4>∞</h4><p>Possibilities</p></div>
+      </div>
+    </div>
+    <div class="about-visual">
+      <div class="orb"></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <h2 class="section-title">What Makes Us <span class="grad">Different</span></h2>
+  <p class="section-sub">Paradox is not just a website — it's a philosophy.</p>
+  <div class="grid">
+    <div class="card"><div class="icon">🌀</div><h3>Infinite Ideas</h3><p>Har idea ek naya paradox. Hum boundaries ko challenge karte hain.</p></div>
+    <div class="card"><div class="icon">⚡</div><h3>Lightning Fast</h3><p>Speed aur precision ka perfect balance. Har interaction smooth.</p></div>
+    <div class="card"><div class="icon">🔮</div><h3>Visionary Design</h3><p>Design jo dekhne mein simple hai but feel mein deep.</p></div>
+    <div class="card"><div class="icon">🧠</div><h3>Smart by Nature</h3><p>Intuitive experiences jo aapke dimaag ki tarah sochein.</p></div>
+    <div class="card"><div class="icon">🛡️</div><h3>Rock Solid</h3><p>Reliability aur security — foundation strong hai.</p></div>
+    <div class="card"><div class="icon">🚀</div><h3>Always Evolving</h3><p>Paradox rehta nahi — grow karta hai. Har din kuch naya.</p></div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="stats-section">
+  <h2 class="section-title">The <span class="grad">Paradox</span> Effect</h2>
+  <p class="section-sub">Numbers jo bolte hain.</p>
+  <div class="stats">
+    <div class="stat"><div class="num">10000+</div><p>Active Users</p></div>
+    <div class="stat"><div class="num">99%</div><p>Uptime</p></div>
+    <div class="stat"><div class="num">150+</div><p>Projects</p></div>
+    <div class="stat"><div class="num">24/7</div><p>Support</p></div>
+  </div>
+</section>
+
+<!-- GALLERY WITH REAL PHOTOS -->
+<section id="gallery">
+  <h2 class="section-title">Our <span class="grad">Work</span></h2>
+  <p class="section-sub">Kuch software aur tech projects jo humne banaye.</p>
+  <div class="gallery">
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=800&auto=format&fit=crop" alt="Code">
+      <div class="overlay"><div><h4>Neon Dashboard</h4><p>Web App • 2024</p></div></div>
+    </div>
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1526498460520-4c246339dccb?q=80&w=800&auto=format&fit=crop" alt="Mobile App">
+      <div class="overlay"><div><h4>Wave Mobile</h4><p>App Design • 2024</p></div></div>
+    </div>
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop" alt="Data">
+      <div class="overlay"><div><h4>EcoVerse Data</h4><p>Analytics • 2023</p></div></div>
+    </div>
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800&auto=format&fit=crop" alt="Laptop">
+      <div class="overlay"><div><h4>Prism UI</h4><p>Branding • 2023</p></div></div>
+    </div>
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1618761714954-0b8cd0026356?q=80&w=800&auto=format&fit=crop" alt="VR">
+      <div class="overlay"><div><h4>Solaris VR</h4><p>UI/UX • 2024</p></div></div>
+    </div>
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=800&auto=format&fit=crop" alt="Office">
+      <div class="overlay"><div><h4>Flux System</h4><p>Product Design • 2024</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section id="team" style="background: var(--bg-alt); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <h2 class="section-title">The Minds Behind <span class="grad">Paradox</span></h2>
+  <p class="section-sub">Yeh log hain jo paradox ko possible banate hain.</p>
+  <div class="team-grid">
+    <div class="team-card">
+      <div class="avatar" style="background: linear-gradient(135deg, #7c3aed, #06b6d4);">A</div>
+      <h4>Arjun Mehra</h4><div class="role">Founder & Visionary</div>
+      <p class="bio">The one who started it all.</p>
+    </div>
+    <div class="team-card">
+      <div class="avatar" style="background: linear-gradient(135deg, #ec4899, #f59e0b);">S</div>
+      <h4>Sanya Kapoor</h4><div class="role">Design Lead</div>
+      <p class="bio">Design is not just how it looks.</p>
+    </div>
+    <div class="team-card">
+      <div class="avatar" style="background: linear-gradient(135deg, #06b6d4, #10b981);">R</div>
+      <h4>Rohan Verma</h4><div class="role">Tech Architect</div>
+      <p class="bio">Code is poetry for Rohan.</p>
+    </div>
+    <div class="team-card">
+      <div class="avatar" style="background: linear-gradient(135deg, #f59e0b, #ec4899);">P</div>
+      <h4>Priya Nair</h4><div class="role">Creative Director</div>
+      <p>She turns concepts into experiences.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <h2 class="section-title">Frequently Asked <span class="grad">Questions</span></h2>
+  <div class="faq">
+    <div class="faq-item">
+      <button class="faq-q">Paradox exactly kya hai? <span class="plus">+</span></button>
+      <div class="faq-a"><p>Paradox ek digital experience platform hai jo design, creativity aur technology ko combine karta hai.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">Message kaise bhejein? <span class="plus">+</span></button>
+      <div class="faq-a"><p>Contact section mein jao, form bharo, aur "Send Message" button click karo. Tumhara message seedha hamare email par aayega.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">Kya messages delete ho sakte hain? <span class="plus">+</span></button>
+      <div class="faq-a"><p>Message aapke email par aayega, toh aap apne email inbox se use manage kar sakte hain.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT + MESSAGE FORM -->
+<section id="contact" style="background: var(--bg-alt); border-top: 1px solid var(--border);">
+  <h2 class="section-title">Send Us a <span class="grad">Message</span></h2>
+  <p class="section-sub">Koi sawaal, idea, ya collaboration? Hum sunne ke liye ready hain.</p>
+
+  <div class="contact-box">
+    <form id="messageForm" novalidate>
+      
+      <!-- ⚠️ YAHAN APNI WEB3FORMS ACCESS KEY DAALO ⚠️ -->
+      <input type="hidden" name="access_key" value="YAHAN_APNI_ACCESS_KEY_PASTE_KARO">
+      <input type="hidden" name="subject" value="Naya Message from Paradox Website">
+
+      <div class="form-row">
+        <div class="field">
+          <label>Your Name *</label>
+          <input type="text" name="name" id="msgName" placeholder="e.g. Arjun Mehra" maxlength="50">
+          <span class="error-text" id="errName"></span>
+        </div>
+        <div class="field">
+          <label>Your Email *</label>
+          <input type="email" name="email" id="msgEmail" placeholder="you@example.com" maxlength="100">
+          <span class="error-text" id="errEmail"></span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Subject *</label>
+        <input type="text" name="custom_subject" id="msgSubject" placeholder="e.g. Collaboration idea" maxlength="80">
+        <span class="error-text" id="errSubject"></span>
+      </div>
+      <div class="field">
+        <label>Your Message *</label>
+        <textarea name="message" id="msgBody" rows="5" placeholder="Apna message likho..." maxlength="1000"></textarea>
+        <span class="error-text" id="errBody"></span>
+      </div>
+
+      <!-- Spam Protection -->
+      <input type="checkbox" name="botcheck" style="display: none;">
+
+      <button type="submit" class="submit-btn" id="submitBtn">
+        <span class="spinner"></span>
+        <span class="btn-text">Send Message ✉</span>
+      </button>
+    </form>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="logo">PARADOX</div>
+      <p>Where logic ends, wonder begins.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Explore</h4>
+      <a href="#home">Home</a>
+      <a href="#about-paradox">About</a>
+      <a href="#features">Features</a>
+      <a href="#team">Team</a>
+    </div>
+    <div class="footer-col">
+      <h4>Resources</h4>
+      <a href="#faq">FAQ</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <div class="footer-col">
+      <h4>Connect</h4>
+      <a href="#">Twitter / X</a>
+      <a href="#">Instagram</a>
+      <a href="#">LinkedIn</a>
+      <a href="#">GitHub</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    © <span id="year">2024</span> Paradox. All rights reserved. | Crafted with 💜 &amp; ⚡
+  </div>
+</footer>
+
+<button class="back-top" id="backTop" aria-label="Back to top">↑</button>
+
+<script>
+/* ============================================================
+   WEB3FORMS MESSAGE SYSTEM (Bina Kisi Popup/Alert ke)
+   ============================================================ */
+
+// ===== VALIDATION =====
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function setFieldError(fieldId, errId, message) {
+  const field = document.getElementById(fieldId);
+  const err = document.getElementById(errId);
+  if (field) field.classList.add('error');
+  if (err) {
+    err.textContent = message;
+    err.classList.add('show');
+  }
+}
+function clearFieldError(fieldId, errId) {
+  const field = document.getElementById(fieldId);
+  const err = document.getElementById(errId);
+  if (field) field.classList.remove('error');
+  if (err) err.classList.remove('show');
+}
+
+// ===== SEND MESSAGE FORM =====
+const messageForm = document.getElementById('messageForm');
+if (messageForm) {
+  messageForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    // Clear errors
+    clearFieldError('msgName', 'errName');
+    clearFieldError('msgEmail', 'errEmail');
+    clearFieldError('msgSubject', 'errSubject');
+    clearFieldError('msgBody', 'errBody');
+    
+    // Get values
+    const name = document.getElementById('msgName').value.trim();
+    const email = document.getElementById('msgEmail').value.trim().toLowerCase();
+    const subject = document.getElementById('msgSubject').value.trim();
+    const body = document.getElementById('msgBody').value.trim();
+    
+    let hasError = false;
+    
+    if (name.length < 2) {
+      setFieldError('msgName', 'errName', 'Please enter your name');
+      hasError = true;
+    }
+    if (!isValidEmail(email)) {
+      setFieldError('msgEmail', 'errEmail', 'Please enter a valid email');
+      hasError = true;
+    }
+    if (subject.length < 3) {
+      setFieldError('msgSubject', 'errSubject', 'Please enter a subject');
+      hasError = true;
+    }
+    if (body.length < 10) {
+      setFieldError('msgBody', 'errBody', 'Message must be at least 10 characters');
+      hasError = true;
+    }
+    
+    if (hasError) return;
+    
+    // Loading state
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.classList.add('loading');
+    
+    // Prepare data
+    const formData = new FormData(messageForm);
+    const object = Object.fromEntries(formData);
+    const json = JSON.stringify(object);
+    
+    try {
+      // Send to Web3Forms
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: json
+      });
+
+      if (response.status === 200) {
+        // Success: Form reset karo, koi popup nahi
+        messageForm.reset();
+      } else {
+        alert('Message send nahi ho paya. Please try again.');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Network error. Please try again.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.classList.remove('loading');
+    }
+  });
+}
+
+/* ============================================================
+   REST OF THE SITE
+   ============================================================ */
+
+// ===== SCROLL PROGRESS =====
+const progress = document.getElementById('scrollProgress');
+const backTop = document.getElementById('backTop');
+
+window.addEventListener('scroll', () => {
+  const st = window.scrollY;
+  const dh = document.documentElement.scrollHeight - window.innerHeight;
+  if (dh > 0 && progress) progress.style.width = (st / dh * 100) + '%';
+  if (backTop) backTop.classList.toggle('show', st > 500);
+});
+
+if (backTop) {
+  backTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+}
+
+// ===== MOBILE MENU =====
+const menuBtn = document.getElementById('menuBtn');
+const navLinks = document.getElementById('navLinks');
+if (menuBtn && navLinks) {
+  menuBtn.addEventListener('click', () => navLinks.classList.toggle('open'));
+  navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => navLinks.classList.remove('open')));
+}
+
+// ===== THEME TOGGLE =====
+const themeToggle = document.getElementById('themeToggle');
+if (themeToggle) {
+  if (localStorage.getItem('paradox-theme') === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    themeToggle.textContent = '☀️';
+  }
+  themeToggle.addEventListener('click', () => {
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    if (isLight) {
+      document.documentElement.removeAttribute('data-theme');
+      themeToggle.textContent = '🌙';
+      localStorage.setItem('paradox-theme', 'dark');
+    } else {
+      document.documentElement.setAttribute('data-theme', 'light');
+      themeToggle.textContent = '☀️';
+      localStorage.setItem('paradox-theme', 'light');
+    }
+  });
+}
+
+// ===== TYPING EFFECT =====
+const typedEl = document.getElementById('typedText');
+const phrases = ['Where Logic Ends', 'Where Wonder Begins', 'Embrace the Impossible'];
+let pi = 0, ci = phrases[0].length, deleting = false;
+
+function typeLoop() {
+  if (!typedEl) return;
+  const current = phrases[pi];
+  if (!deleting) {
+    typedEl.textContent = current.slice(0, ++ci);
+    if (ci === current.length) {
+      deleting = true;
+      setTimeout(typeLoop, 1800);
+      return;
+    }
+    setTimeout(typeLoop, 70);
+  } else {
+    typedEl.textContent = current.slice(0, --ci);
+    if (ci === 0) {
+      deleting = false;
+      pi = (pi + 1) % phrases.length;
+      setTimeout(typeLoop, 300);
+      return;
+    }
+    setTimeout(typeLoop, 35);
+  }
+}
+setTimeout(typeLoop, 2000);
+
+// ===== FAQ =====
+document.querySelectorAll('.faq-item').forEach(item => {
+  const btn = item.querySelector('.faq-q');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      const open = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(f => f.classList.remove('open'));
+      if (!open) item.classList.add('open');
+    });
+  }
+});
+
+// ===== YEAR =====
+const yearEl = document.getElementById('year');
+if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+</script>
+
+</body>
+</html>
